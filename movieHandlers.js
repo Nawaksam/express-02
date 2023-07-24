@@ -1,8 +1,33 @@
 const database = require("./database")
 
 const getMovies = (req, res) => {
+  const initialSql = "select * from movies where 1=1"
+  const and = []
+
+  if (req.query.color) {
+    and.push({
+      column: "color",
+      value: req.query.color,
+      operator: "=",
+    })
+  }
+
+  if (req.query.max_duration) {
+    and.push({
+      column: "duration",
+      value: req.query.max_duration,
+      operator: "<=",
+    })
+  }
+
   database
-    .query("select * from movies")
+    .query(
+      and.reduce(
+        (sql, { column, operator }) => `${sql} and ${column} ${operator} ?`,
+        initialSql
+      ),
+      and.map(({ value }) => value)
+    )
     .then(([movies]) => {
       res.json(movies)
     })

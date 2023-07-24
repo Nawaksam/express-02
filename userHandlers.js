@@ -1,10 +1,35 @@
 const database = require("./database")
 
 const getUsers = (req, res) => {
+  const initialSql = "select * from users where 1=1"
+  const and = []
+
+  if (req.query.language) {
+    and.push({
+      column: "language",
+      value: req.query.language,
+      operator: "=",
+    })
+  }
+
+  if (req.query.city) {
+    and.push({
+      column: "city",
+      value: req.query.city,
+      operator: "=",
+    })
+  }
+
   database
-    .query("select * from users")
-    .then(([users]) => {
-      res.json(users)
+    .query(
+      and.reduce(
+        (sql, { column, operator }) => `${sql} and ${column} ${operator} ?`,
+        initialSql
+      ),
+      and.map(({ value }) => value)
+    )
+    .then(([movies]) => {
+      res.json(movies)
     })
     .catch((err) => {
       console.error(err)

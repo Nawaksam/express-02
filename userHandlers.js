@@ -18,8 +18,7 @@ const getUserById = (req, res) => {
   database
     .query("select * from users where id = ?", [id])
     .then(([user]) => {
-      console.log(user)
-      user.length ? res.json(user) : res.sendStatus(400)
+      user.length ? res.json(user) : res.sendStatus(404)
     })
     .catch((err) => {
       console.log(err)
@@ -66,9 +65,28 @@ const updateUser = (req, res) => {
     })
 }
 
+const deleteUser = (req, res) => {
+  const id = parseInt(req.params.id, 10)
+
+  database
+    .query("DELETE FROM `users` WHERE `id` = ?", [id])
+    .then(([result]) => {
+      if (result.affectedRows === 0) {
+        res.sendStatus(404)
+      } else {
+        res.sendStatus(200)
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+      res.sendStatus(500)
+    })
+}
+
 module.exports = {
   getUsers,
   getUserById,
   postUser,
   updateUser,
+  deleteUser,
 }
